@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Anxiety Detection Dashboard</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+
+<div class="container">
+    <h1>Real-Time Anxiety Detection</h1>
+
+    <div class="main-grid">
+
+        <!-- Camera -->
+        <div class="card">
+            <h2>Live Camera</h2>
+            <video id="video" autoplay></video>
+        </div>
+
+        <!-- Status -->
+        <div class="card">
+            <h2>Status</h2>
+            <p id="status" class="normal">Normal</p>
+            <p>Score: <span id="score">0.00</span></p>
+        </div>
+
+        <!-- Graph -->
+        <div class="card full">
+            <h2>Anxiety Trend</h2>
+            <canvas id="chart"></canvas>
+        </div>
+
+    </div>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>

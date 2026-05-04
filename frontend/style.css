@@ -1,0 +1,49 @@
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background: #0F172A;
+    color: #E2E8F0;
+}
+
+.container {
+    padding: 20px;
+}
+
+h1 {
+    text-align: center;
+    color: #38BDF8;
+}
+
+.main-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+}
+
+.card {
+    background: #111C2E;
+    padding: 20px;
+    border-radius: 12px;
+}
+
+.full {
+    grid-column: span 2;
+}
+
+video {
+    width: 100%;
+    border-radius: 10px;
+}
+
+#status {
+    font-size: 24px;
+    font-weight: bold;
+}
+
+.normal {
+    color: #34D399;
+}
+
+.anxious {
+    color: #F87171;
+}
