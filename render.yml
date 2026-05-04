@@ -1,0 +1,11 @@
+services:
+  - type: web
+    name: anxiety-detection-api
+    runtime: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn api.main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: SECRET_KEY
+        value: changethis32characterslongkey123
+      - key: STRIPE_SECRET_KEY
+        value: sk_test_placeholder
