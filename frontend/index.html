@@ -1,123 +1,685 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>Anxiety Detection</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>AnxietyAI — Real-Time Detection</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+<style>
+:root {
+  --coral:   #EC8F8D;
+  --teal:    #44A194;
+  --steel:   #537D96;
+  --bg:      #0d1117;
+  --card:    #161b22;
+  --border:  #21262d;
+  --text:    #e6edf3;
+  --muted:   #7d8590;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--bg);color:var(--text);font-family:'Segoe UI',sans-serif;min-height:100vh;}
 
-    <style>
-        body {
-            margin: 0;
-            font-family: 'Segoe UI', sans-serif;
-            background: linear-gradient(135deg, #667eea, #764ba2);
-            color: white;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-        }
+/* NAV */
+nav{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:16px 32px;border-bottom:1px solid var(--border);
+  background:rgba(13,17,23,0.95);position:sticky;top:0;z-index:100;
+  backdrop-filter:blur(10px);
+}
+.logo{font-size:1.3rem;font-weight:700;background:linear-gradient(90deg,var(--coral),var(--teal));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.nav-links{display:flex;gap:24px;}
+.nav-links a{color:var(--muted);text-decoration:none;font-size:0.9rem;cursor:pointer;transition:color 0.2s;}
+.nav-links a:hover,.nav-links a.active{color:var(--text);}
+.nav-badge{background:var(--teal);color:#fff;padding:4px 12px;border-radius:20px;font-size:0.75rem;}
 
-        .container {
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(15px);
-            padding: 40px;
-            border-radius: 20px;
-            width: 400px;
-            text-align: center;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-        }
+/* PAGES */
+.page{display:none;padding:32px;}
+.page.active{display:block;}
 
-        h1 {
-            margin-bottom: 10px;
-        }
+/* HERO */
+.hero{text-align:center;padding:60px 20px 40px;}
+.hero h1{font-size:3rem;font-weight:800;line-height:1.2;margin-bottom:16px;}
+.hero h1 span{background:linear-gradient(90deg,var(--coral),var(--teal),var(--steel));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.hero p{color:var(--muted);font-size:1.1rem;max-width:600px;margin:0 auto 32px;}
+.btn{padding:12px 28px;border-radius:8px;border:none;cursor:pointer;font-size:0.95rem;
+  font-weight:600;transition:all 0.2s;}
+.btn-primary{background:linear-gradient(90deg,var(--coral),var(--teal));color:#fff;}
+.btn-primary:hover{opacity:0.85;transform:translateY(-1px);}
+.btn-outline{background:transparent;color:var(--text);border:1px solid var(--border);}
+.btn-outline:hover{border-color:var(--teal);color:var(--teal);}
+.btn-danger{background:var(--coral);color:#fff;}
+.btn-danger:hover{opacity:0.85;}
 
-        p {
-            opacity: 0.8;
-        }
+/* FEATURE CARDS */
+.features{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:20px;max-width:1000px;margin:0 auto 60px;}
+.feat-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:24px;text-align:center;}
+.feat-icon{font-size:2.5rem;margin-bottom:12px;}
+.feat-card h3{font-size:1rem;margin-bottom:8px;}
+.feat-card p{color:var(--muted);font-size:0.85rem;}
 
-        input {
-            margin: 20px 0;
-        }
+/* DETECTION PAGE */
+.detect-grid{display:grid;grid-template-columns:1fr 380px;gap:24px;max-width:1200px;margin:0 auto;}
+.video-section{display:flex;flex-direction:column;gap:16px;}
+.video-wrapper{position:relative;border-radius:16px;overflow:hidden;background:#000;border:2px solid var(--border);}
+video{width:100%;display:block;max-height:480px;object-fit:cover;}
+canvas#overlay{position:absolute;top:0;left:0;width:100%;height:100%;}
+.video-controls{display:flex;gap:12px;}
 
-        button {
-            padding: 12px 25px;
-            border: none;
-            border-radius: 10px;
-            background: #00c9ff;
-            color: white;
-            font-size: 16px;
-            cursor: pointer;
-            transition: 0.3s;
-        }
+/* SCORE PANEL */
+.panel{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:24px;}
+.panel h3{font-size:0.85rem;color:var(--muted);text-transform:uppercase;letter-spacing:2px;margin-bottom:20px;}
+.score-big{text-align:center;margin-bottom:24px;}
+.score-num{font-size:5.5rem;font-weight:900;line-height:1;transition:color 0.4s;}
+.score-unit{color:var(--muted);font-size:0.9rem;}
+.score-level{font-size:1.2rem;font-weight:700;letter-spacing:3px;margin-top:6px;transition:color 0.4s;}
+.bar-wrap{background:#1c2128;border-radius:8px;height:10px;margin:12px 0 24px;overflow:hidden;}
+.bar-fill{height:100%;border-radius:8px;transition:width 0.5s,background 0.5s;}
+.emotion-tag{display:inline-block;padding:6px 20px;border-radius:20px;
+  background:#1c2128;border:1px solid var(--border);font-size:0.9rem;
+  text-transform:uppercase;letter-spacing:2px;margin-bottom:20px;}
+.metrics{display:flex;flex-direction:column;gap:8px;margin-bottom:20px;}
+.metric-row{display:flex;justify-content:space-between;align-items:center;
+  padding:8px 12px;background:#1c2128;border-radius:8px;}
+.metric-row .label{color:var(--muted);font-size:0.8rem;}
+.metric-row .val{font-size:0.85rem;font-weight:600;}
+.api-form{display:flex;flex-direction:column;gap:10px;margin-top:16px;}
+.api-form input{background:#1c2128;border:1px solid var(--border);color:var(--text);
+  padding:10px 14px;border-radius:8px;font-size:0.85rem;width:100%;}
+.api-form input:focus{outline:none;border-color:var(--teal);}
+.status-pill{text-align:center;padding:6px 16px;border-radius:20px;
+  font-size:0.75rem;margin-top:8px;}
+.status-idle{background:#1c2128;color:var(--muted);}
+.status-live{background:rgba(68,161,148,0.15);color:var(--teal);}
+.status-error{background:rgba(236,143,141,0.15);color:var(--coral);}
 
-        button:hover {
-            background: #00a6d6;
-        }
+/* CHART */
+.chart-section{background:var(--card);border:1px solid var(--border);
+  border-radius:16px;padding:24px;margin-top:24px;}
+.chart-section h3{font-size:0.85rem;color:var(--muted);
+  text-transform:uppercase;letter-spacing:2px;margin-bottom:16px;}
+.chart-wrap{position:relative;height:200px;}
+.chart-stats{display:flex;gap:24px;margin-top:16px;}
+.stat-box{flex:1;background:#1c2128;border-radius:8px;padding:12px;text-align:center;}
+.stat-box .sv{font-size:1.4rem;font-weight:700;}
+.stat-box .sl{color:var(--muted);font-size:0.75rem;margin-top:2px;}
 
-        #result {
-            margin-top: 20px;
-            font-size: 18px;
-            font-weight: bold;
-        }
+/* SUBSCRIPTION PAGE */
+.sub-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));
+  gap:24px;max-width:900px;margin:0 auto;}
+.plan-card{background:var(--card);border:1px solid var(--border);border-radius:16px;
+  padding:32px;text-align:center;position:relative;transition:border-color 0.2s;}
+.plan-card:hover{border-color:var(--teal);}
+.plan-card.featured{border-color:var(--coral);}
+.plan-badge{position:absolute;top:-12px;left:50%;transform:translateX(-50%);
+  background:var(--coral);color:#fff;padding:4px 16px;border-radius:20px;font-size:0.75rem;}
+.plan-name{font-size:1.2rem;font-weight:700;margin-bottom:8px;}
+.plan-price{font-size:2.5rem;font-weight:900;margin:16px 0;}
+.plan-price span{font-size:1rem;color:var(--muted);}
+.plan-features{list-style:none;margin:20px 0;text-align:left;}
+.plan-features li{padding:6px 0;color:var(--muted);font-size:0.85rem;}
+.plan-features li::before{content:'✓ ';color:var(--teal);}
 
-        .loader {
-            display: none;
-            margin-top: 15px;
-        }
-    </style>
+/* AUTH PAGE */
+.auth-box{max-width:420px;margin:60px auto;background:var(--card);
+  border:1px solid var(--border);border-radius:16px;padding:40px;}
+.auth-box h2{margin-bottom:24px;text-align:center;}
+.form-group{margin-bottom:16px;}
+.form-group label{display:block;color:var(--muted);font-size:0.85rem;margin-bottom:6px;}
+.form-group input{width:100%;background:#1c2128;border:1px solid var(--border);
+  color:var(--text);padding:12px 14px;border-radius:8px;font-size:0.9rem;}
+.form-group input:focus{outline:none;border-color:var(--teal);}
+.auth-switch{text-align:center;margin-top:16px;color:var(--muted);font-size:0.85rem;}
+.auth-switch a{color:var(--teal);cursor:pointer;text-decoration:none;}
+.alert{padding:12px 16px;border-radius:8px;font-size:0.85rem;margin-bottom:16px;}
+.alert-success{background:rgba(68,161,148,0.15);color:var(--teal);border:1px solid var(--teal);}
+.alert-error{background:rgba(236,143,141,0.15);color:var(--coral);border:1px solid var(--coral);}
+
+/* SESSION HISTORY */
+.history-section{max-width:1200px;margin:0 auto;}
+.session-card{background:var(--card);border:1px solid var(--border);
+  border-radius:12px;padding:20px;margin-bottom:16px;
+  display:flex;justify-content:space-between;align-items:center;}
+.session-info h4{font-size:0.95rem;margin-bottom:4px;}
+.session-info p{color:var(--muted);font-size:0.8rem;}
+.session-score{text-align:center;}
+.session-score .big{font-size:2rem;font-weight:800;}
+.session-score .small{color:var(--muted);font-size:0.75rem;}
+
+@media(max-width:768px){
+  .detect-grid{grid-template-columns:1fr;}
+  .hero h1{font-size:2rem;}
+}
+</style>
 </head>
 <body>
 
-<div class="container">
-    <h1>🧠 Anxiety Detection</h1>
-    <p>Upload an image to analyze facial stress level</p>
+<nav>
+  <div class="logo">AnxietyAI</div>
+  <div class="nav-links">
+    <a onclick="showPage('home')" class="active" id="nav-home">Home</a>
+    <a onclick="showPage('detect')" id="nav-detect">Detection</a>
+    <a onclick="showPage('history')" id="nav-history">History</a>
+    <a onclick="showPage('subscription')" id="nav-subscription">Plans</a>
+    <a onclick="showPage('auth')" id="nav-auth">Login</a>
+  </div>
+  <span class="nav-badge" id="userBadge">Guest</span>
+</nav>
 
-    <input type="file" id="fileInput"><br>
+<!-- HOME PAGE -->
+<div class="page active" id="page-home">
+  <div class="hero">
+    <h1>Real-Time <span>Anxiety Detection</span><br/>Using Facial Analysis</h1>
+    <p>Advanced CNN + geometric analysis detects facial tension signals and computes a live anxiety score — no wearables needed.</p>
+    <div style="display:flex;gap:12px;justify-content:center;">
+      <button class="btn btn-primary" onclick="showPage('detect')">▶ Start Detection</button>
+      <button class="btn btn-outline" onclick="showPage('subscription')">View Plans</button>
+    </div>
+  </div>
+  <div class="features">
+    <div class="feat-card">
+      <div class="feat-icon">👁️</div>
+      <h3>478 Landmarks</h3>
+      <p>MediaPipe maps 478 precise points on your face every frame</p>
+    </div>
+    <div class="feat-card">
+      <div class="feat-icon">🧠</div>
+      <h3>CNN Model</h3>
+      <p>Deep learning trained on 36,000+ facial expression images</p>
+    </div>
+    <div class="feat-card">
+      <div class="feat-icon">📐</div>
+      <h3>Geometry Analysis</h3>
+      <p>EAR, BCR, LCR measure eye squinting, brow furrowing, lip compression</p>
+    </div>
+    <div class="feat-card">
+      <div class="feat-icon">📊</div>
+      <h3>Live Score</h3>
+      <p>0–100 anxiety score updated every second with trend graph</p>
+    </div>
+  </div>
+</div>
 
-    <button onclick="upload()">Analyze</button>
+<!-- DETECTION PAGE -->
+<div class="page" id="page-detect">
+  <div class="detect-grid">
+    <div class="video-section">
+      <div class="video-wrapper">
+        <video id="video" autoplay muted playsinline></video>
+        <canvas id="overlay"></canvas>
+      </div>
+      <div class="video-controls">
+        <button class="btn btn-primary" onclick="startDetection()">▶ Start Camera</button>
+        <button class="btn btn-danger"  onclick="stopDetection()">■ Stop</button>
+        <button class="btn btn-outline" onclick="saveSession()">💾 Save Session</button>
+      </div>
+      <div class="chart-section">
+        <h3>Anxiety Score Over Time</h3>
+        <div class="chart-wrap">
+          <canvas id="anxietyChart"></canvas>
+        </div>
+        <div class="chart-stats">
+          <div class="stat-box">
+            <div class="sv" id="statMean" style="color:var(--teal)">--</div>
+            <div class="sl">Mean Score</div>
+          </div>
+          <div class="stat-box">
+            <div class="sv" id="statMax" style="color:var(--coral)">--</div>
+            <div class="sl">Peak Score</div>
+          </div>
+          <div class="stat-box">
+            <div class="sv" id="statMin" style="color:var(--steel)">--</div>
+            <div class="sl">Min Score</div>
+          </div>
+          <div class="stat-box">
+            <div class="sv" id="statDuration">0s</div>
+            <div class="sl">Duration</div>
+          </div>
+        </div>
+      </div>
+    </div>
 
-    <div class="loader" id="loader">⏳ Processing...</div>
+    <div>
+      <div class="panel">
+        <h3>Live Analysis</h3>
+        <div class="score-big">
+          <div class="score-num" id="scoreNum" style="color:var(--steel)">--</div>
+          <div class="score-unit">/ 100</div>
+          <div class="score-level" id="scoreLevel" style="color:var(--muted)">WAITING</div>
+          <div class="bar-wrap"><div class="bar-fill" id="barFill" style="width:0%;background:var(--steel)"></div></div>
+          <div class="emotion-tag" id="emotionTag">--</div>
+        </div>
+        <div class="metrics">
+          <div class="metric-row"><span class="label">CNN Anxiety</span><span class="val" id="mCNN">--</span></div>
+          <div class="metric-row"><span class="label">Eye Squint (EAR)</span><span class="val" id="mEAR">--</span></div>
+          <div class="metric-row"><span class="label">Brow Furrow (BCR)</span><span class="val" id="mBCR">--</span></div>
+          <div class="metric-row"><span class="label">Lip Press (LCR)</span><span class="val" id="mLCR">--</span></div>
+          <div class="metric-row"><span class="label">Processing Time</span><span class="val" id="mProc">--</span></div>
+        </div>
+        <div class="api-form">
+          <input id="apiUrl" placeholder="API URL" value="http://localhost:8000"/>
+          <input id="apiKey" placeholder="API Key (login to get)"/>
+          <div class="status-pill status-idle" id="statusPill">Camera off</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
 
-    <div id="result"></div>
+<!-- HISTORY PAGE -->
+<div class="page" id="page-history">
+  <div class="history-section">
+    <h2 style="margin-bottom:24px;">Session History</h2>
+    <div id="sessionList">
+      <p style="color:var(--muted)">No sessions saved yet. Run a detection session and click Save Session.</p>
+    </div>
+  </div>
+</div>
+
+<!-- SUBSCRIPTION PAGE -->
+<div class="page" id="page-subscription">
+  <div style="text-align:center;margin-bottom:40px;">
+    <h2 style="font-size:2rem;margin-bottom:8px;">Choose Your Plan</h2>
+    <p style="color:var(--muted)">Unlock full anxiety detection capabilities</p>
+  </div>
+  <div class="sub-grid">
+    <div class="plan-card">
+      <div class="plan-name">Free Trial</div>
+      <div class="plan-price">PKR 0<span>/7 days</span></div>
+      <ul class="plan-features">
+        <li>100 API calls</li>
+        <li>Single frame analysis</li>
+        <li>Basic anxiety score</li>
+        <li>No video analysis</li>
+      </ul>
+      <button class="btn btn-outline" style="width:100%" onclick="activatePlan('trial')">Start Free Trial</button>
+    </div>
+    <div class="plan-card featured">
+      <div class="plan-badge">POPULAR</div>
+      <div class="plan-name">Monthly Basic</div>
+      <div class="plan-price">PKR 500<span>/month</span></div>
+      <ul class="plan-features">
+        <li>5,000 API calls</li>
+        <li>Frame + video analysis</li>
+        <li>Full anxiety score</li>
+        <li>Session history</li>
+      </ul>
+      <button class="btn btn-primary" style="width:100%" onclick="activatePlan('monthly')">Get Started</button>
+    </div>
+    <div class="plan-card">
+      <div class="plan-name">Monthly Pro</div>
+      <div class="plan-price">PKR 1200<span>/month</span></div>
+      <ul class="plan-features">
+        <li>Unlimited API calls</li>
+        <li>Priority processing</li>
+        <li>Full analytics</li>
+        <li>Export reports</li>
+      </ul>
+      <button class="btn btn-outline" style="width:100%" onclick="activatePlan('pro')">Go Pro</button>
+    </div>
+  </div>
+  <div id="subStatus" style="text-align:center;margin-top:32px;color:var(--muted);"></div>
+</div>
+
+<!-- AUTH PAGE -->
+<div class="page" id="page-auth">
+  <div class="auth-box">
+    <h2>Welcome Back</h2>
+    <div id="authAlert" style="display:none"></div>
+    <div id="loginForm">
+      <div class="form-group">
+        <label>Email</label>
+        <input type="email" id="loginEmail" placeholder="you@example.com"/>
+      </div>
+      <div class="form-group">
+        <label>Password</label>
+        <input type="password" id="loginPass" placeholder="••••••••"/>
+      </div>
+      <button class="btn btn-primary" style="width:100%;margin-top:8px" onclick="doLogin()">Login</button>
+      <div class="auth-switch">Don't have an account? <a onclick="toggleAuth()">Register</a></div>
+    </div>
+    <div id="registerForm" style="display:none">
+      <div class="form-group">
+        <label>Email</label>
+        <input type="email" id="regEmail" placeholder="you@example.com"/>
+      </div>
+      <div class="form-group">
+        <label>Password</label>
+        <input type="password" id="regPass" placeholder="••••••••"/>
+      </div>
+      <button class="btn btn-primary" style="width:100%;margin-top:8px" onclick="doRegister()">Create Account</button>
+      <div class="auth-switch">Already have an account? <a onclick="toggleAuth()">Login</a></div>
+    </div>
+  </div>
 </div>
 
 <script>
-async function upload() {
-    const fileInput = document.getElementById("fileInput");
-    const loader = document.getElementById("loader");
-    const result = document.getElementById("result");
+// ── State ──────────────────────────────────────────────
+let intervalId   = null;
+let scoreHistory = [];
+let sessionStart = null;
+let apiKey       = localStorage.getItem('apiKey') || '';
+let userEmail    = localStorage.getItem('userEmail') || '';
+let sessions     = JSON.parse(localStorage.getItem('sessions') || '[]');
+let chart        = null;
 
-    const file = fileInput.files[0];
+// ── Init ───────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+  if (apiKey) {
+    document.getElementById('apiKey').value = apiKey;
+    document.getElementById('userBadge').textContent = userEmail || 'Logged In';
+    showAlert('loginForm', 'Already logged in', 'success');
+  }
+  initChart();
+  renderSessions();
+});
 
-    if (!file) {
-        alert("Please select a file");
-        return;
+// ── Navigation ─────────────────────────────────────────
+function showPage(name) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-links a').forEach(a => a.classList.remove('active'));
+  document.getElementById('page-' + name).classList.add('active');
+  document.getElementById('nav-' + name).classList.add('active');
+}
+
+// ── Chart ──────────────────────────────────────────────
+function initChart() {
+  const ctx = document.getElementById('anxietyChart').getContext('2d');
+  chart = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: [],
+      datasets: [{
+        label: 'Anxiety Score',
+        data: [],
+        borderColor: '#EC8F8D',
+        backgroundColor: 'rgba(236,143,141,0.1)',
+        borderWidth: 2,
+        pointRadius: 2,
+        tension: 0.4,
+        fill: true
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      animation: { duration: 300 },
+      scales: {
+        y: {
+          min: 0, max: 100,
+          grid: { color: '#21262d' },
+          ticks: { color: '#7d8590' }
+        },
+        x: {
+          grid: { color: '#21262d' },
+          ticks: { color: '#7d8590', maxTicksLimit: 8 }
+        }
+      },
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          backgroundColor: '#161b22',
+          borderColor: '#21262d',
+          borderWidth: 1
+        }
+      }
     }
+  });
+}
 
-    loader.style.display = "block";
-    result.innerText = "";
+function updateChart(score) {
+  const now = new Date().toLocaleTimeString();
+  chart.data.labels.push(now);
+  chart.data.datasets[0].data.push(score);
+  if (chart.data.labels.length > 60) {
+    chart.data.labels.shift();
+    chart.data.datasets[0].data.shift();
+  }
+  chart.update('none');
 
-    const formData = new FormData();
-    formData.append("file", file);
+  const scores = chart.data.datasets[0].data;
+  const mean = (scores.reduce((a,b)=>a+b,0)/scores.length).toFixed(1);
+  const max  = Math.max(...scores).toFixed(1);
+  const min  = Math.min(...scores).toFixed(1);
+  document.getElementById('statMean').textContent = mean;
+  document.getElementById('statMax').textContent  = max;
+  document.getElementById('statMin').textContent  = min;
 
-    try {
-        const response = await fetch("http://127.0.0.1:8000/predict", {
-            method: "POST",
-            body: formData
-        });
+  if (sessionStart) {
+    const elapsed = Math.floor((Date.now() - sessionStart) / 1000);
+    document.getElementById('statDuration').textContent = elapsed + 's';
+  }
+}
 
-        const data = await response.json();
+// ── Detection ──────────────────────────────────────────
+async function startDetection() {
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+    const video  = document.getElementById('video');
+    video.srcObject = stream;
+    sessionStart = Date.now();
+    scoreHistory = [];
+    chart.data.labels = [];
+    chart.data.datasets[0].data = [];
+    chart.update();
 
-        loader.style.display = "none";
+    setStatus('live', '🔴 Live — Analysing...');
+    intervalId = setInterval(captureAndAnalyse, 1000);
+  } catch(e) {
+    setStatus('error', 'Camera access denied');
+  }
+}
 
-        result.innerText = "Result: " + JSON.stringify(data);
+function stopDetection() {
+  clearInterval(intervalId);
+  intervalId = null;
+  const video = document.getElementById('video');
+  if (video.srcObject) video.srcObject.getTracks().forEach(t => t.stop());
+  setStatus('idle', 'Camera stopped');
+}
 
-    } catch (error) {
-        loader.style.display = "none";
-        result.innerText = "Error connecting to server";
-    }
+async function captureAndAnalyse() {
+  const video = document.getElementById('video');
+  if (!video.videoWidth) return;
+
+  const canvas  = document.createElement('canvas');
+  canvas.width  = video.videoWidth;
+  canvas.height = video.videoHeight;
+  canvas.getContext('2d').drawImage(video, 0, 0);
+  const b64 = canvas.toDataURL('image/jpeg', 0.75).split(',')[1];
+
+  const url = document.getElementById('apiUrl').value;
+  const key = document.getElementById('apiKey').value;
+
+  try {
+    const res = await fetch(`${url}/analyse/stream`, {
+      method : 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-api-key': key },
+      body   : JSON.stringify({ frame_b64: b64 })
+    });
+    if (!res.ok) { setStatus('error', `API Error ${res.status}`); return; }
+    const data = await res.json();
+    updateUI(data);
+    updateChart(data.anxiety_score);
+    scoreHistory.push(data.anxiety_score);
+  } catch(e) {
+    setStatus('error', 'Connection failed');
+  }
+}
+
+function updateUI(data) {
+  const score = data.anxiety_score;
+  const level = data.level;
+  const color = level==='LOW' ? '#44A194' : level==='MEDIUM' ? '#537D96' : '#EC8F8D';
+
+  document.getElementById('scoreNum').textContent   = score.toFixed(1);
+  document.getElementById('scoreNum').style.color   = color;
+  document.getElementById('scoreLevel').textContent = level;
+  document.getElementById('scoreLevel').style.color = color;
+  document.getElementById('barFill').style.width      = score + '%';
+  document.getElementById('barFill').style.background = color;
+  document.getElementById('emotionTag').textContent   = data.emotion;
+
+  const c = data.components;
+  document.getElementById('mCNN').textContent  = c.cnn_anxiety  + '%';
+  document.getElementById('mEAR').textContent  = c.ear_norm     + '%';
+  document.getElementById('mBCR').textContent  = c.bcr_norm     + '%';
+  document.getElementById('mLCR').textContent  = c.lcr_norm     + '%';
+  document.getElementById('mProc').textContent = data.processing_time_ms + 'ms';
+
+  // Draw heatmap overlay
+  const overlay = document.getElementById('overlay');
+  const video   = document.getElementById('video');
+  overlay.width  = video.offsetWidth;
+  overlay.height = video.offsetHeight;
+  if (data.heatmap_b64) {
+    const img = new Image();
+    img.onload = () => overlay.getContext('2d').drawImage(img, 0, 0, overlay.width, overlay.height);
+    img.src = 'data:image/jpeg;base64,' + data.heatmap_b64;
+  }
+}
+
+// ── Session Save ───────────────────────────────────────
+function saveSession() {
+  if (!scoreHistory.length) { alert('No data to save'); return; }
+  const session = {
+    id      : Date.now(),
+    date    : new Date().toLocaleString(),
+    mean    : (scoreHistory.reduce((a,b)=>a+b,0)/scoreHistory.length).toFixed(1),
+    max     : Math.max(...scoreHistory).toFixed(1),
+    min     : Math.min(...scoreHistory).toFixed(1),
+    duration: Math.floor((Date.now() - sessionStart)/1000),
+    scores  : scoreHistory.slice()
+  };
+  sessions.unshift(session);
+  localStorage.setItem('sessions', JSON.stringify(sessions));
+  renderSessions();
+  alert('Session saved!');
+}
+
+function renderSessions() {
+  const list = document.getElementById('sessionList');
+  if (!sessions.length) {
+    list.innerHTML = '<p style="color:var(--muted)">No sessions saved yet.</p>';
+    return;
+  }
+  list.innerHTML = sessions.map(s => `
+    <div class="session-card">
+      <div class="session-info">
+        <h4>Session — ${s.date}</h4>
+        <p>${s.duration}s duration · ${s.scores.length} frames analysed</p>
+      </div>
+      <div style="display:flex;gap:24px;align-items:center;">
+        <div class="session-score">
+          <div class="big" style="color:var(--teal)">${s.mean}</div>
+          <div class="small">Mean</div>
+        </div>
+        <div class="session-score">
+          <div class="big" style="color:var(--coral)">${s.max}</div>
+          <div class="small">Peak</div>
+        </div>
+        <button class="btn btn-outline" onclick="deleteSession(${s.id})" style="padding:6px 14px;font-size:0.8rem">Delete</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+function deleteSession(id) {
+  sessions = sessions.filter(s => s.id !== id);
+  localStorage.setItem('sessions', JSON.stringify(sessions));
+  renderSessions();
+}
+
+// ── Auth ───────────────────────────────────────────────
+function toggleAuth() {
+  const lf = document.getElementById('loginForm');
+  const rf = document.getElementById('registerForm');
+  lf.style.display = lf.style.display==='none' ? 'block' : 'none';
+  rf.style.display = rf.style.display==='none' ? 'block' : 'none';
+}
+
+async function doLogin() {
+  const email = document.getElementById('loginEmail').value;
+  const pass  = document.getElementById('loginPass').value;
+  const url   = document.getElementById('apiUrl').value || 'http://localhost:8000';
+
+  try {
+    const res  = await fetch(`${url}/auth/login`, {
+      method : 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body   : JSON.stringify({ email, password: pass })
+    });
+    const data = await res.json();
+    if (!res.ok) { showAuthAlert(data.detail || 'Login failed', 'error'); return; }
+
+    apiKey    = data.api_key;
+    userEmail = data.email;
+    localStorage.setItem('apiKey',    apiKey);
+    localStorage.setItem('userEmail', userEmail);
+    document.getElementById('apiKey').value = apiKey;
+    document.getElementById('userBadge').textContent = email;
+    showAuthAlert('Login successful!', 'success');
+    setTimeout(() => showPage('detect'), 1000);
+  } catch(e) {
+    showAuthAlert('Connection error', 'error');
+  }
+}
+
+async function doRegister() {
+  const email = document.getElementById('regEmail').value;
+  const pass  = document.getElementById('regPass').value;
+  const url   = document.getElementById('apiUrl').value || 'http://localhost:8000';
+
+  try {
+    const res  = await fetch(`${url}/auth/register`, {
+      method : 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body   : JSON.stringify({ email, password: pass })
+    });
+    const data = await res.json();
+    if (!res.ok) { showAuthAlert(data.detail || 'Registration failed', 'error'); return; }
+    showAuthAlert('Account created! Please login.', 'success');
+    toggleAuth();
+  } catch(e) {
+    showAuthAlert('Connection error', 'error');
+  }
+}
+
+function showAuthAlert(msg, type) {
+  const el = document.getElementById('authAlert');
+  el.style.display = 'block';
+  el.className = `alert alert-${type}`;
+  el.textContent = msg;
+}
+
+// ── Subscription ───────────────────────────────────────
+async function activatePlan(plan) {
+  const url = document.getElementById('apiUrl').value || 'http://localhost:8000';
+  const key = document.getElementById('apiKey').value || apiKey;
+  if (!key) { alert('Please login first'); showPage('auth'); return; }
+
+  try {
+    const res  = await fetch(`${url}/subscription/start`, {
+      method : 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-api-key': key },
+      body   : JSON.stringify({ plan, card_token: 'test_token' })
+    });
+    const data = await res.json();
+    document.getElementById('subStatus').innerHTML =
+      `<span style="color:var(--teal)">✓ ${data.message} — Plan: ${data.plan} — Expires: ${data.expires_at}</span>`;
+  } catch(e) {
+    document.getElementById('subStatus').innerHTML =
+      '<span style="color:var(--coral)">Connection error</span>';
+  }
+}
+
+// ── Helpers ────────────────────────────────────────────
+function setStatus(type, msg) {
+  const el = document.getElementById('statusPill');
+  el.textContent = msg;
+  el.className = `status-pill status-${type}`;
 }
 </script>
-
 </body>
 </html>
