@@ -1,7 +1,7 @@
 body {
     margin: 0;
-    font-family: Arial, sans-serif;
-    background: #0F172A;
+    font-family: 'Segoe UI', sans-serif;
+    background: linear-gradient(135deg, #0F172A, #020617);
     color: #E2E8F0;
 }
 
@@ -14,30 +14,49 @@ h1 {
     color: #38BDF8;
 }
 
-.main-grid {
+.grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 20px;
 }
 
 .card {
-    background: #111C2E;
+    background: rgba(17, 28, 46, 0.8);
+    backdrop-filter: blur(10px);
     padding: 20px;
-    border-radius: 12px;
+    border-radius: 16px;
+    box-shadow: 0 0 20px rgba(56,189,248,0.1);
 }
 
 .full {
     grid-column: span 2;
 }
 
-video {
+video, #heatmap {
     width: 100%;
-    border-radius: 10px;
+    border-radius: 12px;
+}
+
+.camera-card {
+    position: relative;
+}
+
+#heatmap {
+    position: absolute;
+    top: 0;
+    left: 0;
+    opacity: 0.5;
+}
+
+.score {
+    font-size: 60px;
+    font-weight: bold;
+    text-align: center;
 }
 
 #status {
-    font-size: 24px;
-    font-weight: bold;
+    text-align: center;
+    font-size: 22px;
 }
 
 .normal {
@@ -46,4 +65,15 @@ video {
 
 .anxious {
     color: #F87171;
+    text-shadow: 0 0 10px rgba(248,113,113,0.6);
+}
+
+ul {
+    list-style: none;
+    padding: 0;
+}
+
+li {
+    padding: 5px 0;
+    border-bottom: 1px solid #1e293b;
 }

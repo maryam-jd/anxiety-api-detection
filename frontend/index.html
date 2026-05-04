@@ -1,29 +1,39 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>Anxiety Detection Dashboard</title>
-    <link rel="stylesheet" href="styles.css">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<meta charset="UTF-8">
+<title>Anxiety Detection AI</title>
+<link rel="stylesheet" href="styles.css">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
+
 <body>
 
 <div class="container">
-    <h1>Real-Time Anxiety Detection</h1>
 
-    <div class="main-grid">
+    <h1>AI Anxiety Monitor</h1>
 
-        <!-- Camera -->
-        <div class="card">
-            <h2>Live Camera</h2>
+    <div class="grid">
+
+        <!-- Camera + Heatmap -->
+        <div class="card camera-card">
+            <h2>Live Feed</h2>
             <video id="video" autoplay></video>
+            <img id="heatmap" />
         </div>
 
-        <!-- Status -->
+        <!-- Score -->
+        <div class="card score-card">
+            <h2>Live Score</h2>
+            <div id="score" class="score">0</div>
+            <p id="status">Normal</p>
+            <p id="emotion">-</p>
+        </div>
+
+        <!-- Components -->
         <div class="card">
-            <h2>Status</h2>
-            <p id="status" class="normal">Normal</p>
-            <p>Score: <span id="score">0.00</span></p>
+            <h2>Facial Signals</h2>
+            <ul id="components"></ul>
         </div>
 
         <!-- Graph -->
@@ -33,6 +43,7 @@
         </div>
 
     </div>
+
 </div>
 
 <script src="script.js"></script>
