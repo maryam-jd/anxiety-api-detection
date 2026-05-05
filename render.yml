@@ -1,10 +1,15 @@
 services:
   - type: web
     name: anxiety-detection-api
-    runtime: docker
-    dockerfilePath: ./Dockerfile
+    runtime: python
+    region: oregon
+    plan: free
+    buildCommand: pip install -r requirements_clean.txt
+    startCommand: uvicorn api.main:app --host 0.0.0.0 --port $PORT
     envVars:
       - key: SECRET_KEY
         value: changethis32characterslongkey123
       - key: STRIPE_SECRET_KEY
         value: sk_test_placeholder
+      - key: PYTHON_VERSION
+        value: 3.11.9

@@ -1,0 +1,34 @@
+# ── Web Framework ──────────────────────────────────────────
+fastapi==0.115.6
+uvicorn==0.34.0
+python-multipart==0.0.20
+starlette==0.41.3
+
+# ── Database ───────────────────────────────────────────────
+sqlmodel==0.0.22
+SQLAlchemy==2.0.36
+
+# ── ML / AI (CPU-only for Render — no GPU needed) ──────────
+tensorflow-cpu==2.18.0
+keras==3.7.0
+mediapipe==0.10.18
+opencv-python-headless==4.10.0.84
+
+# ── Data / Science ─────────────────────────────────────────
+numpy==1.26.4
+scipy==1.14.1
+scikit-learn==1.5.2
+pillow==10.4.0
+
+# ── HTTP / Networking ──────────────────────────────────────
+httpx==0.27.2
+requests==2.32.3
+
+# ── Auth / Payments ────────────────────────────────────────
+python-jose==3.3.0
+stripe==11.3.0
+passlib==1.7.4
+
+# ── Utilities ─────────────────────────────────────────────
+gdown==5.2.0
+python-dotenv==1.0.1
